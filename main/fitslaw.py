@@ -230,15 +230,15 @@ class FittsLawExperiment:
             pygame.draw.rect(self.screen, BLACK, (SCREEN_WIDTH - 30, scroll_pos, 20, scroll_height))
         
         # draw buttons 
-        pygame.draw.rect(self.screen, GREEN, (SCREEN_WIDTH//2 - 120, 400, 100, 50))
-        pygame.draw.rect(self.screen, RED, (SCREEN_WIDTH//2 + 20, 400, 100, 50))
+        pygame.draw.rect(self.screen, GREEN, (SCREEN_WIDTH//2 - 120, 490, 100, 50))
+        pygame.draw.rect(self.screen, RED, (SCREEN_WIDTH//2 + 20, 490, 100, 50))
 
         agree = self.small_font.render("I Agree", True, BLACK)
-        agree_rect = agree.get_rect(center=(SCREEN_WIDTH//2 - 70, 425))
+        agree_rect = agree.get_rect(center=(SCREEN_WIDTH//2 - 70, 515))
         self.screen.blit(agree, agree_rect)
 
         disagree = self.small_font.render("I Decline", True, BLACK)
-        disagree_rect = disagree.get_rect(center=(SCREEN_WIDTH//2 + 70, 425))
+        disagree_rect = disagree.get_rect(center=(SCREEN_WIDTH//2 + 70, 515))
         self.screen.blit(disagree, disagree_rect)
 
         # Draw scroll instructions
@@ -246,8 +246,8 @@ class FittsLawExperiment:
         self.screen.blit(scroll_instruction, (50, SCREEN_HEIGHT - 50))
 
         # store button positions 
-        self.agree_button_rect = pygame.Rect(SCREEN_WIDTH//2 - 120, 400, 100, 50)
-        self.decline_button_rect = pygame.Rect(SCREEN_WIDTH//2 + 20, 400, 100, 50)
+        self.agree_button_rect = pygame.Rect(SCREEN_WIDTH//2 - 120, 490, 100, 50)
+        self.decline_button_rect = pygame.Rect(SCREEN_WIDTH//2 + 20, 490, 100, 50)
 
         pygame.display.flip()
     
