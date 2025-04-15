@@ -1,11 +1,5 @@
-'''
-Experiment file for Fitts' Law Experiment
-This file contains the main logic for running the experiment, including trial setup, mouse tracking, and data collection.
-It imports necessary modules and functions from other files in the project.
-It handles the trial sequence, mouse movements, and calculates the time taken and distance traveled by the mouse.
-It also saves the trial data to a CSV file for later analysis.
-It uses Pygame for graphics and user input handling.
-'''
+# This script runs the experiment, displaying targets and recording participant responses.
+# It uses Pygame for graphics and input handling, and saves the results to a CSV file.
 
 import pygame
 import time

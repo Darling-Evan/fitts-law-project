@@ -1,3 +1,4 @@
+# Fitts' Law Experiment using Pygame
 import pygame
 import sys
 import random
@@ -19,8 +20,8 @@ BLUE = (0, 0, 255)
 GRAY = (200, 200, 200)
 
 # Experiment Parameters
-TARGET_SIZES = [20, 40, 60]  # Diameter in pixels
-TARGET_DISTANCES = [100, 200, 300]  # Distance from center in pixels
+TARGET_SIZES = [20, 40, 60]  
+TARGET_DISTANCES = [100, 200, 300]  
 DIRECTIONS = ["left", "right"]
 TRIALS_PER_CONFIG = 10
 
@@ -32,14 +33,15 @@ class FittsLawExperiment:
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 36)
         self.small_font = pygame.font.Font(None, 24)
+        self.scroll_position = 0
         
         # Create data directory if it doesn't exist
         if not os.path.exists("data"):
             os.makedirs("data")
         
         # Experiment state
-        self.state = "welcome"  # welcome, consent, instruction, trial, feedback, completion
-        self.participant_id = str(uuid.uuid4())[:8]  # Generate unique participant ID
+        self.state = "welcome"  
+        self.participant_id = str(uuid.uuid4())[:8]  
         self.trial_data = []
         self.current_trial = 0
         self.generate_trial_sequence()
@@ -88,7 +90,7 @@ class FittsLawExperiment:
         
         # Reset trial variables
         self.errors = 0
-        self.mouse_path = [(center_x, center_y)]  # Start with center position
+        self.mouse_path = [(center_x, center_y)]  
         self.waiting_for_center_click = True
         
     def calculate_distance_traveled(self):
@@ -156,36 +158,97 @@ class FittsLawExperiment:
         title_rect = title.get_rect(center=(SCREEN_WIDTH//2, 50))
         self.screen.blit(title, title_rect)
         
-        # Simplified consent text - replace with your actual consent document
+        
         consent_text = [
-            "This experiment will measure how quickly you can select targets of",
-            "different sizes at different distances. The experiment consists of 180 trials.",
+            "INFORMED CONSENT DOCUMENT",
             "",
-            "Your participation is voluntary and you may stop at any time.",
-            "Your data will be stored anonymously with a unique participant ID.",
+            "Please read the following informed consent document. If you consent to the study,",
+            "click 'I Agree' below. If you do not consent and would like to cancel your",
+            "participation in the study, click 'I Decline'.",
             "",
-            "The experiment will take approximately 15-20 minutes.",
+            "Project Title: CS470 HCI - Fitts' Law study",
             "",
-            "Do you agree to participate in this study?"
+            "Thank you for agreeing to participate in this research study! This document provides",
+            "important information about what you will be asked to do during the research study,",
+            "about the risks and benefits of the study, and about your rights as a research subject.",
+            "",
+            "The purpose of this research study is to evaluate how quickly and accurately a user can",
+            "click on differently-sized targets on screen at varying distances. During the study,",
+            "you will be randomly presented with targets of different sizes placed at different",
+            "distances from a starting point. There will be a total of 180 trials, and each trial",
+            "will take a few seconds, depending on your speed. The entire study should take no",
+            "longer than 15-20 minutes to complete.",
+            "",
+            "To participate in this study, you must:",
+            "* Be at least 18 years of age",
+            "* Be able to use a computer mouse/trackpad without assistive devices",
+            "",
+            "To collect data, our software will record your mouse movements, how long it takes you",
+            "to successfully click on each target, and whether you make any errors. This information",
+            "will be recorded anonymously with a randomly generated participant ID, and no personally",
+            "identifiable information will be collected.",
+            "",
+            "You will not be compensated for your participation in this study. We do not believe",
+            "there are any direct benefits to you based on your participation in the study, but your",
+            "participation will contribute to our understanding of human-computer interaction.",
+            "We do not anticipate any significant risks in your participating in this study.",
+            "",
+            "You may end your participation in the study at any time. If you wish to end your",
+            "participation, press the ESC key. If you decide to end your participation early,",
+            "any results collected for your session will not be saved.",
+            "",
+            "By clicking 'I Agree', you hereby acknowledge that you are at least 18 years of age,",
+            "and that you are able to use a computer mouse/trackpad without assistive devices.",
+            "You also indicate that you agree to the following statement:",
+            "",
+            "'I have read this consent form and I understand the risks, benefits, and procedures",
+            "involved with participation in this research study. I hereby agree to participate in",
+            "this research study.'"
         ]
         
-        for i, line in enumerate(consent_text):
+        #calc vertical position for scrollable content
+        y_pos = 100
+        visible_lines = 15
+
+        # display text with scolling if needed
+        start_line = int(self.scroll_position)
+        end_line = min(start_line + visible_lines, len(consent_text))
+
+        for i in range(start_line, end_line):
+            line = consent_text[i]
             text = self.small_font.render(line, True, BLACK)
-            text_rect = text.get_rect(center=(SCREEN_WIDTH//2, 120 + i*30))
-            self.screen.blit(text, text_rect)
+            self.screen.blit(text, (50, y_pos + (i - start_line) * 25))
+
+        # draw scroll indicator
+        if len(consent_text) > visible_lines:
+            pygame.draw.rect(self.screen, GRAY, (SCREEN_WIDTH - 30, 100, 20, 300))
+
+            # draw scroll position indicator 
+            scroll_ratio  = start_line / max(1, len(consent_text) - visible_lines)
+            scroll_height = 300 * (visible_lines / len(consent_text))
+            scroll_pos = 100 + scroll_ratio * (300 - scroll_height)
+            pygame.draw.rect(self.screen, BLACK, (SCREEN_WIDTH - 30, scroll_pos, 20, scroll_height))
         
-        # Draw buttons
+        # draw buttons 
         pygame.draw.rect(self.screen, GREEN, (SCREEN_WIDTH//2 - 120, 400, 100, 50))
         pygame.draw.rect(self.screen, RED, (SCREEN_WIDTH//2 + 20, 400, 100, 50))
-        
+
         agree = self.small_font.render("I Agree", True, BLACK)
         agree_rect = agree.get_rect(center=(SCREEN_WIDTH//2 - 70, 425))
         self.screen.blit(agree, agree_rect)
-        
+
         disagree = self.small_font.render("I Decline", True, BLACK)
         disagree_rect = disagree.get_rect(center=(SCREEN_WIDTH//2 + 70, 425))
         self.screen.blit(disagree, disagree_rect)
-        
+
+        # Draw scroll instructions
+        scroll_instruction = self.small_font.render("Scroll with mouse wheel", True, BLACK)
+        self.screen.blit(scroll_instruction, (50, SCREEN_HEIGHT - 50))
+
+        # store button positions 
+        self.agree_button_rect = pygame.Rect(SCREEN_WIDTH//2 - 120, 400, 100, 50)
+        self.decline_button_rect = pygame.Rect(SCREEN_WIDTH//2 + 20, 400, 100, 50)
+
         pygame.display.flip()
     
     def draw_instruction_screen(self):
@@ -287,10 +350,13 @@ class FittsLawExperiment:
                 
                 elif self.state == "consent":
                     # Check if clicked on "I Agree" button
-                    if SCREEN_WIDTH//2 - 120 <= mouse_pos[0] <= SCREEN_WIDTH//2 - 20 and 400 <= mouse_pos[1] <= 450:
+                    if hasattr(self, 'agree_button_rect') and self.agree_button_rect.collidepoint(mouse_pos):
+                        print(f"Participant {self.participant_id} has consented to the experiment")
                         self.state = "instruction"
+                
                     # Check if clicked on "I Decline" button
-                    elif SCREEN_WIDTH//2 + 20 <= mouse_pos[0] <= SCREEN_WIDTH//2 + 120 and 400 <= mouse_pos[1] <= 450:
+                    elif hasattr(self, 'decline_button_rect') and self.decline_button_rect.collidepoint(mouse_pos):
+                        print("Participant declined consent, exiting")
                         return False
                 
                 elif self.state == "instruction":
@@ -343,7 +409,14 @@ class FittsLawExperiment:
             if self.state == "trial" and not self.waiting_for_center_click:
                 if event.type == MOUSEMOTION:
                     self.mouse_path.append(pygame.mouse.get_pos())
-        
+            # Handle mouse wheel scrolling for consent screen
+            if self.state == "consent" and event.type == pygame.MOUSEWHEEL:
+                total_lines = 39  
+                visible_lines = 15
+            
+            # Update scroll position (adjust the 0.5 value to control scroll speed)
+                self.scroll_position = max(0, min(self.scroll_position - event.y * 1.0, 
+                                             total_lines - visible_lines))
         return True
     
     def run(self):
