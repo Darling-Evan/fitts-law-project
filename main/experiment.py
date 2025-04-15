@@ -1,3 +1,12 @@
+'''
+Experiment file for Fitts' Law Experiment
+This file contains the main logic for running the experiment, including trial setup, mouse tracking, and data collection.
+It imports necessary modules and functions from other files in the project.
+It handles the trial sequence, mouse movements, and calculates the time taken and distance traveled by the mouse.
+It also saves the trial data to a CSV file for later analysis.
+It uses Pygame for graphics and user input handling.
+'''
+
 import pygame
 import time
 import random
@@ -9,7 +18,7 @@ def run_experiment(screen, clock, font, participant_id):
     trial_data = []
 
     for i, config_id in enumerate(trial_sequence):
-        # Use your own logic to map config_id to size, distance, and direction
+        # Define target distance and size (can be adjusted more intelligently if needed)
         distance = random.choice([100, 200, 300])
         size = random.choice([20, 40, 60])
         direction = random.choice(["up", "down", "left", "right"])
@@ -28,16 +37,18 @@ def run_experiment(screen, clock, font, participant_id):
                 elif event.type == pygame.MOUSEBUTTONDOWN and center_rect.collidepoint(event.pos):
                     waiting = False
 
-        # Begin trial
-        target_x = 400 + distance if direction == "right" else 400 - distance
-        target_y = 300
+        # Random target location on screen (keeping it visible within bounds)
+        margin = size + 10
+        target_x = random.randint(margin, 800 - margin)
+        target_y = random.randint(margin, 600 - margin)
 
-        start_pos = pygame.mouse.get_pos()
         start_time = time.time()
+        start_pos = pygame.mouse.get_pos()
         errors = 0
         mouse_path = [start_pos]
 
-        while True:
+        clicked = False
+        while not clicked:
             screen.fill((255, 255, 255))
             pygame.draw.circle(screen, (255, 0, 0), (target_x, target_y), size)
             pygame.display.flip()
@@ -55,10 +66,9 @@ def run_experiment(screen, clock, font, participant_id):
                         total_time = round((end_time - start_time) * 1000, 2)
                         travel_distance = calculate_mouse_distance(mouse_path)
                         trial_data.append([i+1, distance, size, direction, total_time, round(travel_distance, 2), errors])
-                        break
+                        clicked = True
                     else:
                         errors += 1
-
             mouse_path.append(pygame.mouse.get_pos())
             clock.tick(60)
 

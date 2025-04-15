@@ -1,3 +1,10 @@
+'''
+Fitts' Law Experiment Main File
+This file initializes the Pygame window and handles the main loop for the experiment.
+It imports necessary modules and functions from other files in the project.
+The main function handles the flow of the experiment, including the welcome screen, informed consent form, and running the experiment.
+'''
+
 import pygame
 import sys
 from experiment import run_experiment
