@@ -171,7 +171,7 @@ class FittsLawExperiment:
             "Research Team:",
             "",
             "Adam Chase: adam.chase@mnsu.edu",
-            "GROUP MEMBER: EMAIL ADDRESS",
+            "Evan Darling: evan.darling@mnsu.edu",
             "GROUP MEMBER: EMAIL ADDRESS",
             "GROUP MEMBER: EMAIL ADDRESS",
             "",
