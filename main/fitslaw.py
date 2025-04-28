@@ -173,7 +173,7 @@ class FittsLawExperiment:
             "Adam Chase: adam.chase@mnsu.edu",
             "Evan Darling: evan.darling@mnsu.edu",
             "Andrew Krediet: andrew.krediet@mnsu.edu",
-            "GROUP MEMBER: EMAIL ADDRESS",
+            "Joe Hernandez: joseph.hernandez@mnsu.edu",
             "",
             "Thank you for agreeing to participate in this research study! This document provides",
             "important information about what you will be asked to do during the research study,",
