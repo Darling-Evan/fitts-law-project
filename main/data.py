@@ -360,3 +360,6 @@ def generate_report_data(df, metrics_df):
         'distance_stats': distance_stats,
         'participant_stats': participant_stats
     }
+
+if __name__ == "__main__":
+    main()
