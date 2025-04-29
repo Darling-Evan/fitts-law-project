@@ -6,6 +6,147 @@ from scipy import stats
 import math
 import glob
 
+def export_results_to_text(df, metrics_df, output_dir="results"):
+    """Export detailed numerical results to a text file.
+    
+    Parameters:
+        df (DataFrame): The filtered data with all trials
+        metrics_df (DataFrame): The calculated Fitts' Law metrics
+        output_dir (str): Directory to save the results file
+    
+    Returns:
+        str: Path to the created text file
+    """
+    # Create output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Calculate regression for reporting
+    slope, intercept, r_value, p_value, std_err = stats.linregress(
+        metrics_df['ID'], metrics_df['time_ms_mean'])
+    
+    # Path for the results file
+    results_path = os.path.join(output_dir, 'fitts_law_results.txt')
+    
+    with open(results_path, 'w') as f:
+        # Title and overview
+        f.write("FITTS' LAW EXPERIMENT RESULTS\n")
+        f.write("============================\n\n")
+        
+        f.write(f"Number of participants: {df['participant_id'].nunique()}\n")
+        f.write(f"Total trials: {len(df)}\n")
+        f.write(f"Average movement time: {df['time_ms'].mean():.2f} ms\n")
+        f.write(f"Average error rate: {df['errors'].mean():.2f} errors per trial\n\n")
+        
+        # Regression results
+        f.write("REGRESSION ANALYSIS\n")
+        f.write("==================\n\n")
+        f.write(f"Regression equation: MT = {intercept:.2f} + {slope:.2f} × ID\n")
+        f.write(f"R-squared value: {r_value**2:.4f}\n")
+        f.write(f"Throughput: {1000/slope:.2f} bits/second\n\n")
+        
+        # Configuration means
+        f.write("CONFIGURATION MEANS (Movement Time in ms)\n")
+        f.write("======================================\n\n")
+        
+        # Create a pivot table for size and distance means
+        pivot_df = metrics_df.pivot_table(
+            values='time_ms_mean', 
+            index='size', 
+            columns='distance', 
+            aggfunc='mean'
+        )
+        
+        # Write pivot table headers
+        f.write("Target Size (px) | ")
+        for col in pivot_df.columns:
+            f.write(f"Distance {col} (px) | ")
+        f.write("\n")
+        
+        f.write("---------------- | ")
+        for _ in range(len(pivot_df.columns)):
+            f.write("---------------- | ")
+        f.write("\n")
+        
+        # Write pivot table data
+        for idx, row in pivot_df.iterrows():
+            f.write(f"{idx:14d} | ")
+            for val in row:
+                f.write(f"{val:14.2f} | ")
+            f.write("\n")
+        f.write("\n")
+        
+        # ID and IP values
+        f.write("INDEX OF DIFFICULTY AND PERFORMANCE\n")
+        f.write("==================================\n\n")
+        f.write("Size (px) | Distance (px) | Direction | ID (bits) | MT (ms) | IP (bits/s)\n")
+        f.write("--------- | ------------- | --------- | --------- | ------- | ----------\n")
+        
+        # Sort by ID for easier reading
+        sorted_metrics = metrics_df.sort_values(['ID', 'size', 'distance', 'direction'])
+        
+        for _, row in sorted_metrics.iterrows():
+            f.write(f"{row['size']:9d} | ")
+            f.write(f"{row['distance']:13d} | ")
+            f.write(f"{row['direction']:9s} | ")
+            f.write(f"{row['ID']:9.2f} | ")
+            f.write(f"{row['time_ms_mean']:7.2f} | ")
+            f.write(f"{row['IP']:10.1f}\n")
+        
+        f.write("\n\n")
+        
+        # Standard deviations
+        f.write("STANDARD DEVIATIONS (Movement Time in ms)\n")
+        f.write("======================================\n\n")
+        
+        # Create a pivot table for standard deviations
+        std_pivot = metrics_df.pivot_table(
+            values='time_ms_std', 
+            index='size', 
+            columns='distance', 
+            aggfunc='mean'
+        )
+        
+        # Write pivot table headers
+        f.write("Target Size (px) | ")
+        for col in std_pivot.columns:
+            f.write(f"Distance {col} (px) | ")
+        f.write("\n")
+        
+        f.write("---------------- | ")
+        for _ in range(len(std_pivot.columns)):
+            f.write("---------------- | ")
+        f.write("\n")
+        
+        # Write pivot table data
+        for idx, row in std_pivot.iterrows():
+            f.write(f"{idx:14d} | ")
+            for val in row:
+                f.write(f"{val:14.2f} | ")
+            f.write("\n")
+        f.write("\n")
+        
+        # Participant comparison
+        f.write("PARTICIPANT PERFORMANCE\n")
+        f.write("======================\n\n")
+        f.write("Participant ID | Avg. Time (ms) | Avg. Errors | Avg. Distance (px)\n")
+        f.write("-------------- | -------------- | ----------- | ------------------\n")
+        
+        # Calculate participant stats
+        participant_stats = df.groupby('participant_id').agg({
+            'time_ms': 'mean',
+            'errors': 'mean',
+            'distance_traveled': 'mean'
+        }).reset_index()
+        
+        for _, row in participant_stats.iterrows():
+            f.write(f"{row['participant_id']:14s} | ")
+            f.write(f"{row['time_ms']:14.2f} | ")
+            f.write(f"{row['errors']:11.2f} | ")
+            f.write(f"{row['distance_traveled']:18.2f}\n")
+    
+    print(f"Results written to: {results_path}")
+    return results_path
+
 def load_participant_data(data_dir="data"):
     """Load all participant CSV files and combine them."""
     all_files = glob.glob(os.path.join(data_dir, "fitts_law_*.csv"))
@@ -265,6 +406,10 @@ def main():
     # Export to Excel
     print("\nExporting data to Excel...")
     excel_path = export_to_excel(filtered_df, metrics_df)
+
+    ## Filtered data for detailed results
+    print("\nExporting detailed results to text file...")
+    text_results_path = export_results_to_text(filtered_df, metrics_df)
     
     # Generate report data
     print("\nGenerating report data...")
@@ -290,6 +435,7 @@ def main():
     
     print("\nAnalysis complete!")
     print(f"- Excel file saved to: {excel_path}")
+    print(f"- Text results saved to: {text_results_path}")
     print(f"- Main plot saved to: {plot_path}")
     print(f"- Participant comparison saved to: {participant_plot_path}")
 
